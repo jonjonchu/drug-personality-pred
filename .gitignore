@@ -127,3 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# User ignore files
+drunk_data/
+drug_consumption.data
+drug_consumption_headers.csv
