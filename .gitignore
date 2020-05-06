@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 # User ignore files
-drunk_data/
-drug_consumption.data
-drug_consumption_headers.csv
+data/orig_data
+temp/
+*.pptx
+

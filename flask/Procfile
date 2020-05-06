@@ -1,0 +1,1 @@
+web: gunicorn drugC_app:app --log-file=-

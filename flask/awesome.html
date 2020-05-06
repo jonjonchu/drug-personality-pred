@@ -1,0 +1,1077 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Drug Prediction Wizard</title>
+    <link rel="stylesheet" href="static/d3.slider.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+
+     body {
+       font-family: Verdana,Arial,sans-serif;
+     }
+
+     h1 {
+       font-size: 1.0em;
+       margin: 40px 0px 5px 0px;
+       color: gray;
+     }
+
+     h2 {
+       font-size: 0.8em;
+       margin: 32px 0 5px 0;
+       color: gray
+     }
+
+     .leftside, .rightside {
+       height: 50vh;
+       width: 100%;
+     }
+
+     @media screen and (min-width: 760px){
+       .leftside, .rightside {height:100vh;}
+     }
+
+     .space {
+       margin-bottom: 20 px;
+     }
+
+     .bar_wrapper {
+       width: 800px;
+       margin-left: auto;
+       margin-right: auto;
+       margin-bottom: 0px;
+     }
+
+     .slider_wrapper {
+       width: 400px;
+       margin-left: auto;
+       margin-right: auto;
+       margin-bottom: 0px;
+
+     }
+
+     .wrapper {
+       width: 800px;
+       margin-left: auto;
+       margin-right: auto;
+       margin-bottom: 0px;
+     }
+
+     #bar_chart {
+       margin-bottom: 0 px;
+     }
+
+     .legal {
+       fill: #0454CF;
+     }
+
+     .e_pleiad {
+       fill: #FF75A3;
+     }
+
+     .h_pleiad {
+       fill: #FF4545;
+     }
+
+     .b_pleiad {
+       fill: #8E44AD;
+     }
+
+     .inhalants {
+       fill: #52BE80;
+     }
+
+     span {
+       color: steelblue;
+     }
+
+    </style>
+  </head>
+
+  <body>
+    
+
+    <div class="row no-gutters">
+      
+      <div class="col no-gutters">
+        <div class="leftside d-flex justify-content-center align-items-center">
+          <div id="sliders" class="slider_wrapper">
+      
+            <h2 class="feature">Age: <span id="age">25</span></h2>
+            <div id="age_slider"></div>
+      
+            <h2 class="feature">Education: <span id="education">Professional Certificate/Diploma</span></h2>
+            <div id="education_slider"></div>
+      
+            <h2 class="feature">Neuroticism: <span id="nscore">36</span></h2>
+            <div id="nscore_slider"></div>
+      
+            <h2 class="feature">Extraversion: <span id="escore">40</span></h2>
+            <div id="escore_slider"></div>
+      
+            <h2 class="feature">Openness to Experience: <span id="oscore">46</span></h2>
+            <div id="oscore_slider"></div>
+      
+            <h2 class="feature">Agreeableness: <span id="ascore">43</span></h2>
+            <div id="ascore_slider"></div>
+      
+            <h2 class="feature">Conscientiousness: <span id="cscore">40</span></h2>
+            <div id="cscore_slider"></div>
+      
+            <h2 class="feature">Impulsiveness: <span id="impulsiveness">1</span></h2>
+            <div id="impulsiveness_slider"></div>
+      
+            <h2 class="feature">Sensation Seeking: <span id="ss">1</span></h2>
+            <div id="ss_slider"></div>
+      
+          </div>
+        </div>
+      </div>
+
+      <div class="col no-gutters">
+        <div class="rightside d-flex justify-content-center align-items-center">
+          <div id="chart_area" class="bar_wrapper">
+            <h1>Probability of drug use in the past month</h1>
+            <p class="space"></p>
+            <div id="bar_chart">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    
+
+    </div>
+    <div class="row no-gutters">
+      <div class="wrapper">
+        <h2>There are three correlated 'pleiades' of drugs: The Ecstasy pleiad, Heroin pleiad, and Benzo pleiad.
+          Each is colored differently in order to distinguish them from their neighbors. However, there are a few drugs that
+          are present in more than one pleiad: Cocaine in the Ecstasy and Benzo pleiades, Methadone in the Heroin and Benzo pleiades,
+          and Amphetamines in all pleiades.
+          <br>
+          <br>
+          For more information, see <a href="https://www.researchgate.net/publication/338737362_Personality_Traits_and_Drug_Consumption_A_Story_Told_by_Data?">this preprint paper</a> 
+          for a much more in-depth look at the subject.
+          <br>
+          <br>
+          Data can be found <a href="http://archive.ics.uci.edu/ml/datasets/Drug+consumption+%28quantified%29#">here</a> 
+          at the UCI Machine Learning Database.
+          <br>
+          <br>
+          Many thanks go to the instructors at Metis Data Science, Dr. Elaine Fehrman, and my fellow students at Metis.
+          <br>
+          <br>
+          .
+        </h2>
+      </div>
+    </div>
+    <!-- Import the libraries: jQuery, d3, d3.slider -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="static/d3.slider.js"></script>
+
+    <script>
+
+     <!-- SINGLE BAR CHART -->
+     // Feature variables
+     var current_age = 25;
+     var current_education = 5;
+     var education_text = "Professional Certificate/Diploma"
+     var current_nscore = 36;
+     var current_escore = 40;
+     var current_oscore = 46;
+     var current_ascore = 43;
+     var current_cscore = 42;
+     var current_impulsiveness = 1;
+     var current_ss = 1;
+     // Fesponse variables
+     var alcohol_pct  = 61.9;
+     var choc_pct     = 88.8;
+     var caff_pct     = 67.4;
+     var cannabis_pct = 32.1;
+     var nicotine_pct = 50.9;
+     var lsd_pct      = 19.3;
+     var mushroom_pct = 31.3;
+     var legalh_pct   = 31.3;
+     var ketamine_pct = 8.9;
+     var amphet_pct   = 18.4;
+     var ecstasy_pct  = 21.4;
+     var coke_pct     = 8.9;
+     var crack_pct    = 7.5;
+     var meth_pct     = 9.5;
+     var heroin_pct   = 7.6;
+     var benzos_pct   = 12.2;
+     var amyl_pct     = 7.8;
+     var vsa_pct      = 7.5;
+
+
+    var eduTickFormatter = function(d) {
+      if (d == 0) {
+      return "Left School before Age 16";
+      } else if (d == 1) {
+      return "Left School at Age 16";
+      } else if (d == 2) {
+      return "Left School at Age 17";
+      } else if (d == 3) {
+      return "Left School at Age 18";
+      } else if (d == 4) {
+      return "Some College/Uni, no Degree/Cert";
+      } else if (d == 5) {
+      return "Professional Certificate/Diploma";
+      } else if (d == 6) {
+      return "University Degree";
+      } else if (d == 7) {
+      return "Master's Degree";
+      } else if (d == 8) {
+      return "Doctorate";
+      }
+    };
+
+     var chart = d3.select("#bar_chart")
+                   .append("svg:svg")
+                   .attr("width", 700)
+                   .attr("height", 520);
+
+     var chance_scale = d3.scale.linear()
+                                .domain([0, 100])
+                                .range([150, 700]);
+
+     <!--ALCOHOL-->
+     var alcohol_bar = chart.append("g")
+                    .attr("class", "legal")
+
+        // Add colorbar
+        alcohol_bar.append("svg:rect")
+            .attr("id", "alcoholbar")
+            .attr("class", "bar")
+            .attr("width", chance_scale(alcohol_pct))
+            .attr("height", 20);
+        // Add percentage text
+        alcohol_bar.append("text")
+            .attr("id", "alcohol_percent_text")
+            .attr("dy", ".75em")
+            .attr("y", 3)
+            .attr("x", chance_scale(alcohol_pct-5))
+            .attr("text-anchor", "middle")
+            .attr("fill", "white")
+            .attr("font-size", 16)
+            .text( alcohol_pct.toFixed(1) + "%");
+          // Add drug name
+        alcohol_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+          .text("Alcohol");
+
+    <!-- Chocolate -->
+    var choc_bar = chart.append("g")
+       .attr("class", "legal")
+       .attr("transform", "translate(0,29)")
+       // Add colorbar
+       choc_bar.append("svg:rect")
+       .attr("id", "chocbar")
+       .attr("class", "bar")
+       .attr("width", chance_scale(choc_pct))
+       .attr("height", 20);
+       // Add percentage text
+       choc_bar.append("text")
+       .attr("id", "choc_percent_text")
+       .attr("dy", ".75em")
+       .attr("y", 3)
+       .attr("x", chance_scale(choc_pct-5))
+       .attr("text-anchor", "middle")
+       .attr("fill", "white")
+       .attr("font-size", 16)
+       .text( choc_pct.toFixed(1) + "%");
+       // Add drug name
+       choc_bar.append("text")
+         .attr("dy", ".75em")
+         .attr("y", 3)
+         .attr("x", 3)
+         .attr("text-anchor", "left")
+         .attr("fill", "white")
+         .attr("font-size", 16)
+       .text( "Chocolate");
+    <!--Caffeine-->
+    var caff_bar = chart.append("g")
+       .attr("class", "legal")
+       .attr("transform", "translate(0,58)")
+       // Add colorbar
+       caff_bar.append("svg:rect")
+       .attr("id", "caffbar")
+       .attr("class", "bar")
+       .attr("width", chance_scale(caff_pct))
+       .attr("height", 20);
+       // Add percentage text
+       caff_bar.append("text")
+       .attr("id", "caff_percent_text")
+       .attr("dy", ".75em")
+       .attr("y", 3)
+       .attr("x", chance_scale(caff_pct-5))
+       .attr("text-anchor", "middle")
+       .attr("fill", "white")
+       .attr("font-size", 16)
+       .text( caff_pct.toFixed(1) + "%");
+       // Add drug name
+       caff_bar.append("text")
+         .attr("dy", ".75em")
+         .attr("y", 3)
+         .attr("x", 3)
+         .attr("text-anchor", "left")
+         .attr("fill", "white")
+         .attr("font-size", 16)
+       .text( "Caffeine");
+    <!-- Nicotine-->
+    var nicotine_bar = chart.append("g")
+       .attr("class", "legal")
+       .attr("transform", "translate(0,87)")
+       // Add colorbar
+       nicotine_bar.append("svg:rect")
+       .attr("id", "nicotinebar")
+       .attr("class", "bar")
+       .attr("width", chance_scale(nicotine_pct))
+       .attr("height", 20);
+       // Add percentage text
+       nicotine_bar.append("text")
+       .attr("id", "nicotine_percent_text")
+       .attr("dy", ".75em")
+       .attr("y", 3)
+       .attr("x", chance_scale(nicotine_pct-5))
+       .attr("text-anchor", "middle")
+       .attr("fill", "white")
+       .attr("font-size", 16)
+       .text( nicotine_pct.toFixed(1) + "%");
+       // Add drug name
+       nicotine_bar.append("text")
+         .attr("dy", ".75em")
+         .attr("y", 3)
+         .attr("x", 3)
+         .attr("text-anchor", "left")
+         .attr("fill", "white")
+         .attr("font-size", 16)
+       .text( "Nicotine");
+    <!-- Cannabis-->
+    var cannabis_bar = chart.append("g")
+        .attr("class", "e_pleiad")
+        .attr("transform", "translate(0,116)")
+        // Add colorbar
+        cannabis_bar.append("svg:rect")
+        .attr("id", "cannabisbar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(cannabis_pct))
+        .attr("height", 20);
+        // Add percentage text
+        cannabis_bar.append("text")
+        .attr("id", "cannabis_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(cannabis_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( cannabis_pct.toFixed(1) + "%");
+        // Add drug name
+        cannabis_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Cannabis");
+    <!-- LSD -->
+    var lsd_bar = chart.append("g")
+        .attr("class", "e_pleiad")
+        .attr("transform", "translate(0,145)")
+        // Add colorbar
+        lsd_bar.append("svg:rect")
+        .attr("id", "lsdbar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(lsd_pct))
+        .attr("height", 20);
+        // Add percentage text
+        lsd_bar.append("text")
+        .attr("id", "lsd_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(lsd_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( lsd_pct.toFixed(1) + "%");
+        // Add drug name
+        lsd_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "LSD");
+    <!-- Mushrooms -->
+    var mushrooms_bar = chart.append("g")
+        .attr("class", "e_pleiad")
+        .attr("transform", "translate(0,174)")
+        // Add colorbar
+        mushrooms_bar.append("svg:rect")
+        .attr("id", "mushroomsbar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(mushroom_pct))
+        .attr("height", 20);
+        // Add percentage text
+        mushrooms_bar.append("text")
+        .attr("id", "mushrooms_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(mushroom_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( mushroom_pct.toFixed(1) + "%");
+        // Add drug name
+        mushrooms_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Mushrooms");
+    <!-- Legal Highs -->
+    var legalh_bar = chart.append("g")
+        .attr("class", "e_pleiad")
+        .attr("transform", "translate(0,203)")
+        // Add colorbar
+        legalh_bar.append("svg:rect")
+        .attr("id", "legalhbar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(legalh_pct))
+        .attr("height", 20);
+        // Add percentage text
+        legalh_bar.append("text")
+        .attr("id", "legalh_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(legalh_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( legalh_pct.toFixed(1) + "%");
+        // Add drug name
+        legalh_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Legal Highs");
+    <!-- Ketamine -->
+    var ketamine_bar = chart.append("g")
+        .attr("class", "e_pleiad")
+        .attr("transform", "translate(0,232)")
+        // Add colorbar
+        ketamine_bar.append("svg:rect")
+        .attr("id", "ketaminebar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(ketamine_pct))
+        .attr("height", 20);
+        // Add percentage text
+        ketamine_bar.append("text")
+        .attr("id", "ketamine_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(ketamine_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( ketamine_pct.toFixed(1) + "%");
+        // Add drug name
+        ketamine_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Ketamine");
+    <!-- Ecstasy -->
+    var ecstasy_bar = chart.append("g")
+        .attr("class", "e_pleiad")
+        .attr("transform", "translate(0,261)")
+        // Add colorbar
+        ecstasy_bar.append("svg:rect")
+        .attr("id", "ecstasybar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(ecstasy_pct))
+        .attr("height", 20)
+        // Add percentage text
+        ecstasy_bar.append("text")
+        .attr("id", "ecstasy_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(ecstasy_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( ecstasy_pct.toFixed(1) + "%");
+        // Add drug name
+        ecstasy_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Ecstasy");
+    <!-- Amphetamines -->
+    var amphet_bar = chart.append("g")
+        .attr("class", "e_pleiad")
+        .attr("transform", "translate(0,290)")
+        // Add colorbar
+        amphet_bar.append("svg:rect")
+        .attr("id", "amphetbar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(amphet_pct))
+        .attr("height", 20)
+        // Add percentage text
+        amphet_bar.append("text")
+        .attr("id", "amphet_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(amphet_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( amphet_pct.toFixed(1) + "%");
+        // Add drug name
+        amphet_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Amphetamines");
+    <!-- Cocaine -->
+    var coke_bar = chart.append("g")
+        .attr("class", "e_pleiad")
+        .attr("transform", "translate(0,319)")
+        // Add colorbar
+        coke_bar.append("svg:rect")
+        .attr("id", "cokebar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(coke_pct))
+        .attr("height", 20)
+        // Add percentage text
+        coke_bar.append("text")
+        .attr("id", "coke_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(coke_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( coke_pct.toFixed(1) + "%");
+        // Add drug name
+        coke_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Cocaine");
+    <!-- Crack Cocaine -->
+    var crack_bar = chart.append("g")
+        .attr("class", "h_pleiad")
+        .attr("transform", "translate(0,348)")
+        // Add colorbar
+        crack_bar.append("svg:rect")
+        .attr("id", "crackbar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(crack_pct))
+        .attr("height", 20)
+        // Add percentage text
+        crack_bar.append("text")
+        .attr("id", "crack_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(crack_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( crack_pct.toFixed(1) + "%");
+        // Add drug name
+        crack_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Crack Cocaine");
+    <!-- Heroin -->
+    var heroin_bar = chart.append("g")
+        .attr("class", "h_pleiad")
+        .attr("transform", "translate(0,377)")
+        // Add colorbar
+        heroin_bar.append("svg:rect")
+        .attr("id", "heroinbar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(heroin_pct))
+        .attr("height", 20)
+        // Add percentage text
+        heroin_bar.append("text")
+        .attr("id", "heroin_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(heroin_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( heroin_pct.toFixed(1) + "%");
+        // Add drug name
+        heroin_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Heroin");
+    <!-- Methadone -->
+    var meth_bar = chart.append("g")
+        .attr("class", "h_pleiad")
+        .attr("transform", "translate(0,406)")
+        // Add colorbar
+        meth_bar.append("svg:rect")
+        .attr("id", "methbar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(meth_pct))
+        .attr("height", 20)
+        // Add percentage text
+        meth_bar.append("text")
+        .attr("id", "meth_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(meth_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( meth_pct.toFixed(1) + "%");
+        // Add drug name
+        meth_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Methadone");
+    <!-- Benzos -->
+    var benzos_bar = chart.append("g")
+        .attr("class", "b_pleiad")
+        .attr("transform", "translate(0,435)")
+        // Add colorbar
+        benzos_bar.append("svg:rect")
+        .attr("id", "benzosbar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(benzos_pct))
+        .attr("height", 20)
+        // Add percentage text
+        benzos_bar.append("text")
+        .attr("id", "benzos_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(benzos_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( benzos_pct.toFixed(1) + "%");
+        // Add drug name
+        benzos_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Benzodiazepines");
+    <!-- Amyl Nitrates -->
+    var amyl_bar = chart.append("g")
+        .attr("class", "inhalants")
+        .attr("transform", "translate(0,464)")
+        // Add colorbar
+        amyl_bar.append("svg:rect")
+        .attr("id", "amylbar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(amyl_pct))
+        .attr("height", 20)
+        // Add percentage text
+        amyl_bar.append("text")
+        .attr("id", "amyl_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(amyl_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( amyl_pct.toFixed(1) + "%");
+        // Add drug name
+        amyl_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Amyl Nitrates");
+    <!-- VSA -->
+    var vsa_bar = chart.append("g")
+        .attr("class", "inhalants")
+        .attr("transform", "translate(0,493)")
+        // Add colorbar
+        vsa_bar.append("svg:rect")
+        .attr("id", "vsabar")
+        .attr("class", "bar")
+        .attr("width", chance_scale(vsa_pct))
+        .attr("height", 20)
+        // Add percentage text
+        vsa_bar.append("text")
+        .attr("id", "vsa_percent_text")
+        .attr("dy", ".75em")
+        .attr("y", 3)
+        .attr("x", chance_scale(vsa_pct-5))
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", 16)
+        .text( vsa_pct.toFixed(1) + "%");
+        // Add drug name
+        vsa_bar.append("text")
+          .attr("dy", ".75em")
+          .attr("y", 3)
+          .attr("x", 3)
+          .attr("text-anchor", "left")
+          .attr("fill", "white")
+          .attr("font-size", 16)
+        .text( "Volatiles");
+
+
+
+
+
+
+
+     <!-- FUNCTION TO GET CHANCE FROM YOUR PREDICTOR WITH AJAX AND CHANGE BAR  HEIGHT -->
+     function getAndDrawChance(age, education, nscore, escore, oscore, ascore, cscore, impulsiveness, ss){
+       
+       $.ajax({
+         type: "POST",
+         contentType: "application/json; charset=utf-8",
+         url: "/score",
+         dataType: "json",
+         async: true,
+         data: JSON.stringify({"age": age, 
+                "education": education, 
+                "nscore": nscore,
+                "escore": escore,
+                "oscore": oscore,
+                "ascore": ascore,
+                "cscore": cscore,
+                "impulsiveness": impulsiveness,
+                "ss": ss
+                }),
+
+         success: function (data) {
+           console.log("hello")
+           //alcohol
+           var alcohol_chance = 100 * data["alcohol"];
+           d3.select("#alcoholbar")
+             .attr("width", chance_scale(alcohol_chance));
+           d3.select("#alcohol_percent_text")
+             .attr("x", chance_scale(alcohol_chance-5))
+             .text(alcohol_chance.toFixed(1) + "%");
+
+           var choc_chance = 100 * data["choc"];
+           d3.select("#chocbar")
+             .attr("width", chance_scale(choc_chance));
+           d3.select("#choc_percent_text")
+             .attr("x", chance_scale(choc_chance - 5))
+             .text(choc_chance.toFixed(1) + "%");
+
+           var caff_chance = 100 * data["caff"];
+           d3.select("#caffbar")
+             .attr("width", chance_scale(caff_chance));
+           d3.select("#caff_percent_text")
+             .attr("x", chance_scale(caff_chance - 5))
+             .text(caff_chance.toFixed(1) + "%");
+
+           var nicotine_chance = 100 * data["nicotine"];
+           d3.select("#nicotinebar")
+             .attr("width", chance_scale(nicotine_chance));
+           d3.select("#nicotine_percent_text")
+             .attr("x", chance_scale(nicotine_chance - 5))
+             .text(nicotine_chance.toFixed(1) + "%");
+
+           var cannabis_chance = 100 * data["cannabis"];
+           d3.select("#cannabisbar")
+             .attr("width", chance_scale(cannabis_chance));
+           d3.select("#cannabis_percent_text")
+             .attr("x", chance_scale(cannabis_chance - 5))
+             .text(cannabis_chance.toFixed(1) + "%");
+
+           var lsd_chance = 100 * data["lsd"];
+           d3.select("#lsdbar")
+             .attr("width", chance_scale(lsd_chance));
+           d3.select("#lsd_percent_text")
+             .attr("x", chance_scale(lsd_chance - 5))
+             .text(lsd_chance.toFixed(1) + "%");
+
+           var mushrooms_chance = 100 * data["mushrooms"];
+           d3.select("#mushroomsbar")
+             .attr("width", chance_scale(mushrooms_chance));
+           d3.select("#mushrooms_percent_text")
+             .attr("x", chance_scale(mushrooms_chance - 5))
+             .text(mushrooms_chance.toFixed(1) + "%");
+
+           var legalh_chance = 100 * data["legalh"];
+           d3.select("#legalhbar")
+             .attr("width", chance_scale(legalh_chance));
+           d3.select("#legalh_percent_text")
+             .attr("x", chance_scale(legalh_chance - 5))
+             .text(legalh_chance.toFixed(1) + "%");
+
+           var ketamine_chance = 100 * data["ketamine"];
+           d3.select("#ketaminebar")
+             .attr("width", chance_scale(ketamine_chance));
+           d3.select("#ketamine_percent_text")
+             .attr("x", chance_scale(ketamine_chance - 5))
+             .text(ketamine_chance.toFixed(1) + "%");
+
+           var ecstasy_chance = 100 * data["ecstasy"];
+           d3.select("#ecstasybar")
+             .attr("width", chance_scale(ecstasy_chance));
+           d3.select("#ecstasy_percent_text")
+             .attr("x", chance_scale(ecstasy_chance - 5))
+             .text(ecstasy_chance.toFixed(1) + "%");
+
+           var amphet_chance = 100 * data["amphet"];
+           d3.select("#amphetbar")
+             .attr("width", chance_scale(amphet_chance));
+           d3.select("#amphet_percent_text")
+             .attr("x", chance_scale(amphet_chance - 5))
+             .text(amphet_chance.toFixed(1) + "%");
+
+           var coke_chance = 100 * data["coke"];
+           d3.select("#cokebar")
+             .attr("width", chance_scale(coke_chance));
+           d3.select("#coke_percent_text")
+             .attr("x", chance_scale(coke_chance - 5))
+             .text(coke_chance.toFixed(1) + "%");
+
+           var crack_chance = 100 * data["crack"];
+           d3.select("#crackbar")
+             .attr("width", chance_scale(crack_chance));
+           d3.select("#crack_percent_text")
+             .attr("x", chance_scale(crack_chance - 5))
+             .text(crack_chance.toFixed(1) + "%");
+
+           var heroin_chance = 100 * data["heroin"];
+           d3.select("#heroinbar")
+             .attr("width", chance_scale(heroin_chance));
+           d3.select("#heroin_percent_text")
+             .attr("x", chance_scale(heroin_chance - 5))
+             .text(heroin_chance.toFixed(1) + "%");
+
+           var meth_chance = 100 * data["meth"];
+           d3.select("#methbar")
+             .attr("width", chance_scale(meth_chance));
+           d3.select("#meth_percent_text")
+             .attr("x", chance_scale(meth_chance - 5))
+             .text(meth_chance.toFixed(1) + "%");
+
+           var benzos_chance = 100 * data["benzos"];
+           d3.select("#benzosbar")
+             .attr("width", chance_scale(benzos_chance));
+           d3.select("#benzos_percent_text")
+             .attr("x", chance_scale(benzos_chance - 5))
+             .text(benzos_chance.toFixed(1) + "%");
+
+           var amyl_chance = 100 * data["amyl"];
+           d3.select("#amylbar")
+             .attr("width", chance_scale(amyl_chance));
+           d3.select("#amyl_percent_text")
+             .attr("x", chance_scale(amyl_chance - 5))
+             .text(amyl_chance.toFixed(1) + "%");
+
+           var vsa_chance = 100 * data["vsa"];
+           d3.select("#vsabar")
+             .attr("width", chance_scale(vsa_chance));
+           d3.select("#vsa_percent_text")
+             .attr("x", chance_scale(vsa_chance - 5))
+             .text(vsa_chance.toFixed(1) + "%");
+         },
+         error: function (data) {
+           console.log("FAILURE")
+           console.log(data)
+         }
+       })
+     }
+
+
+     <!-- SLIDERS -->
+
+     d3.select('#age_slider')
+       .call(
+         d3.slider()
+           .value(current_age)
+           .min(18)
+           .max(100)
+           .step(1)
+           .axis(true)
+           .on("slide", function(evt,value) {
+             d3.select('#age').text(value);
+             current_age = value;
+             getAndDrawChance(current_age, current_education, current_nscore, current_escore, current_oscore, current_ascore, current_cscore, current_impulsiveness, current_ss)
+           }
+           )
+       );
+
+     d3.select('#education_slider')
+       .call(
+         d3.slider()
+           .value(current_education)
+           .min(0)
+           .max(8)
+           .step(1)
+           .axis(true)
+           .on("slide", function(evt,value) {
+             d3.select('#education').text(eduTickFormatter(value));
+             current_education = value;
+             getAndDrawChance(current_age, current_education, current_nscore, current_escore, current_oscore, current_ascore, current_cscore, current_impulsiveness, current_ss)
+            }
+           )
+          
+       );
+
+    d3.select('#nscore_slider')
+        .call(
+          d3.slider()
+            .value(current_nscore)
+            .min(12)
+            .max(60)
+            .step(1)
+            .axis(true)
+            .on("slide", function (evt, value) {
+              d3.select('#nscore').text(value);
+              current_nscore = value;
+              getAndDrawChance(current_age, current_education, current_nscore, current_escore, current_oscore, current_ascore, current_cscore, current_impulsiveness, current_ss)
+            }
+            )
+        );
+    d3.select('#escore_slider')
+        .call(
+          d3.slider()
+            .value(current_escore)
+            .min(16)
+            .max(60)
+            .step(1)
+            .axis(true)
+            .on("slide", function (evt, value) {
+              d3.select('#escore').text(value);
+              current_escore = value;
+              getAndDrawChance(current_age, current_education, current_nscore, current_escore, current_oscore, current_ascore, current_cscore, current_impulsiveness, current_ss)
+            }
+            )
+        );
+
+    d3.select('#oscore_slider')
+        .call(
+          d3.slider()
+            .value(current_oscore)
+            .min(24)
+            .max(60)
+            .step(1)
+            .axis(true)
+            .on("slide", function (evt, value) {
+              d3.select('#oscore').text(value);
+              current_oscore  = value;
+              getAndDrawChance(current_age, current_education, current_nscore, current_escore, current_oscore, current_ascore, current_cscore, current_impulsiveness, current_ss)
+            }
+            )
+        );
+
+    d3.select('#ascore_slider')
+        .call(
+          d3.slider()
+            .value(current_ascore)
+            .min(12)
+            .max(60)
+            .step(1)
+            .axis(true)
+            .on("slide", function (evt, value) {
+              d3.select('#ascore').text(value);
+              current_ascore = value;
+              getAndDrawChance(current_age, current_education, current_nscore, current_escore, current_oscore, current_ascore, current_cscore, current_impulsiveness, current_ss)
+            }
+            )
+        );
+
+    d3.select('#cscore_slider')
+        .call(
+          d3.slider()
+            .value(current_cscore)
+            .min(17)
+            .max(60)
+            .step(1)
+            .axis(true)
+            .on("slide", function (evt, value) {
+              d3.select('#cscore').text(value);
+              current_cscore = value;
+              getAndDrawChance(current_age, current_education, current_nscore, current_escore, current_oscore, current_ascore, current_cscore, current_impulsiveness, current_ss)
+            }
+            )
+        );
+    
+    d3.select('#impulsiveness_slider')
+        .call(
+          d3.slider()
+            .value(current_impulsiveness)
+            .min(-4)
+            .max(5)
+            .step(1)
+            .axis(true)
+            .on("slide", function (evt, value) {
+              d3.select('#impulsiveness').text(value);
+              current_impulsiveness = value;
+              getAndDrawChance(current_age, current_education, current_nscore, current_escore, current_oscore, current_ascore, current_cscore, current_impulsiveness, current_ss)
+            }
+            )
+        );
+    
+    d3.select('#ss_slider')
+        .call(
+          d3.slider()
+            .value(current_ss)
+            .min(-5)
+            .max(5)
+            .step(1)
+            .axis(true)
+            .on("slide", function (evt, value) {
+              d3.select('#ss').text(value);
+              current_ss = value;
+              getAndDrawChance(current_age, current_education, current_nscore, current_escore, current_oscore, current_ascore, current_cscore, current_impulsiveness, current_ss)
+            }
+            )
+        );
+
+
+    </script>
+  </body>
+</html>
