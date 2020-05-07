@@ -263,4 +263,5 @@ def score():
 # Start the app server on port XXXX
 # (The default website port)
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
+    # debug=True
